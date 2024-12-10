@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO Message App</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Socket.IO Message App</h1>
+  <div id="messages"></div>
+
+  <input type="text" id="username" placeholder="Enter your username">
+  <textarea id="message" placeholder="Type your message"></textarea>
+  <button onclick="sendMessage()">Send Message</button>
+
+  <script>
+    const socket = io();
+
+    // عند إدخال اسم المستخدم
+    document.getElementById('username').addEventListener('change', (e) => {
+      socket.emit('setUsername', e.target.value);
+    });
+
+    // إرسال رسالة جديدة
+    function sendMessage() {
+      const username = document.getElementById('username').value;
+      const message = document.getElementById('message').value;
+      socket.emit('sendMessage', { username, message });
+      document.getElementById('message').value = ''; // مسح حقل الرسالة
+    }
+
+    // استقبال الرسائل المخزنة عند الاتصال
+    socket.on('receiveMessages', (messages) => {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = ''; // مسح الرسائل القديمة
+      messages.forEach((msg) => {
+        const msgDiv = document.createElement('div');
+        msgDiv.textContent = `${msg.user}: ${msg.message}`;
+        messagesDiv.appendChild(msgDiv);
+      });
+    });
+
+    // استقبال الرسالة الجديدة عند إرسالها
+    socket.on('receiveMessage', (message) => {
+      const messagesDiv = document.getElementById('messages');
+      const msgDiv = document.createElement('div');
+      msgDiv.textContent = `${message.user}: ${message.message}`;
+      messagesDiv.appendChild(msgDiv);
+    });
+  </script>
+</body>
+</html>
